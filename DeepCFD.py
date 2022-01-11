@@ -9,15 +9,14 @@ from torch.utils.data import TensorDataset
 from Models.UNetEx import UNetEx
 
 if __name__ == "__main__":
-    
+    torch.manual_seed(0)
     # Loading dataset
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     x = pickle.load(open("./dataX.pkl", "rb"))
     y = pickle.load(open("./dataY.pkl", "rb"))
     x = torch.FloatTensor(x)
-    y = torch.FloatTensor(y)    
-    channels_weights = torch.sqrt(torch.mean(y.permute(0, 2, 3, 1).reshape((981*172*79,3)) ** 2, dim=0)).view(1, -1, 1, 1).to(device)
-    print(channels_weights)
+    y = torch.FloatTensor(y)
+       
     
     simulation_directory = "./Run/"
     if not os.path.exists(simulation_directory):
@@ -25,11 +24,11 @@ if __name__ == "__main__":
         
     # Spliting dataset into 70% train and 30% test
     train_data, test_data = split_tensors(x, y, ratio=0.7)
-    
+    channels_weights = torch.sqrt(torch.mean(y.permute(0, 2, 3, 1).reshape((-1,3)) ** 2, dim=0)).view(1, -1, 1, 1).to(device)
     train_dataset, test_dataset = TensorDataset(*train_data), TensorDataset(*test_data)        
     test_x, test_y = test_dataset[:]
-
-    torch.manual_seed(0)
+    print(channels_weights)
+    
     lr = 0.001
     kernel_size = 5
     filters = [8, 16, 32, 32]
